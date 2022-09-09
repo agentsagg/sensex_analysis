@@ -1,0 +1,95 @@
+CREATE EXTERNAL TABLE employee(
+id int,
+name string,
+salary bigint,
+dept string)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY ',';
+
+LOAD DATA LOCAL INPATH '/home/cloudera/employees.txt' INTO TABLE employee;
+
+select * from employee;
+select * from employee where dept='Oracle';
+select * from employee order by dept;
+select max(salary) from employee;
+select dept from employee group by dept;
+
+
+
+
+
+HIVE PARTITION
+---------------------
+
+CREATE EXTERNAL TABLE employee_p(
+id int,
+name string,
+salary bigint)
+PARTITIONED BY (dept string)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY ',';
+
+INSERT INTO employee_p PARTITION (dept) select * from employee
+
+set hive.exec.dynamic.partition.mode=nonstatic
+
+show partitions employee_p
+
+!hdfs dfs -ls /user/hive/warehouse/aspire.db/employee_p/dept=SAP/
+!hdfs dfs -cat /user/hive/warehouse/aspire.db/employee_p/dept=SAP/000000_0
+
+
+
+
+LOAD NEW PARTITION DATA
+-----------------------
+
+LOAD DATA LOCAL INPATH '/home/cloudera/employee1.txt' into table employee_p PARTITION(dept='Oracle')
+
+LOAD EXTRA DATA MANUALLY
+=======================
+
+hdfs dfs -mkdir /user/hive/warehouse/aspire.db/employee_p/dept=MySQL
+
+hdfs dfs -put employeesextra.txt /user/hive/warehouse/aspire.db/employee_p/dept=MySQL
+
+show partitions employee_p
+
+msck repair table employee_p
+
+HIVE BUCKETS
+============
+
+CREATE TABLE employee_b(
+id int,
+name string,
+salary double)
+CLUSTERED BY (id) INTO 3 BUCKETS
+ROW FORMAT DELIMITED FIELDS TERMINATED BY ',';
+
+LOAD DATA LOCAL INPATH '/home/cloudera/employees.txt' INTO TABLE employee_b;
+
+select * from employee_b;
+
+set hive.enforce.bucketing=true;
+set mapred.reduce.tasks=3;
+
+TABLE WITH PARTITION & BUCKETS
+==============================
+
+CREATE TABLE weblog
+(user_id int,
+url string,
+source_ip string)
+PARTITIONED BY (dt string)
+CLUSTERED BY (user_id) into 96 buckets
+ROW FORMAT DELIMITED FIELDS TERMINATED BY ',';
+
+RUNNING HIVEQL AS SCRIPT OUTSIDE HIVE
+=====================================
+
+hive -f hivequires.hql
+
+STORING HIVE RESULTS IN HDFS
+============================
+
+use aspirevision;
+INSERT OVERWRITE DIRECTORY '/user/cloudera/employee'

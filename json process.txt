@@ -1,0 +1,13 @@
+create table json_serde
+(id string,name string,price double,author struct<name:string,surname:string>)
+ROW FORMAT SERDE 'org.openx.data.jsonserde.JsonSerDe';
+
+add jar /home/cloudera/json-serde-1.3.7-jar-with-dependencies.jar;
+
+LOAD DATA LOCAL INPATH '/home/cloudera/jsondata.txt' INTO TABLE json_serde;
+
+select * from json_serde;
+
+describe json_serde;
+
+select id,name,price,author.name,author.surname from json_serde;

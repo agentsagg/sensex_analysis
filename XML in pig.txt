@@ -1,0 +1,28 @@
+<CATALOG>
+<BOOK>
+<TITLE>Hadoop Definitive Guide</TITLE>
+<AUTHOR>Tom White</AUTHOR>
+<COUNTRY>US</COUNTRY>
+<PRICE>14.90</PRICE>
+<YEAR>2012</YEAR>
+</BOOK>
+<BOOK>
+<TITLE>Programming Pig</TITLE>
+<AUTHOR>Alan Gates</AUTHOR>
+<COUNTRY>USA</COUNTRY>
+<PRICE>30.90</PRICE>
+<YEAR>2013</YEAR>
+</BOOK>
+</CATALOG>
+
+register piggybank-0.15.0.jar
+
+A = load 'xml_data.txt' using org.apache.pig.piggybank.storage.XMLLoader('BOOK') as (x:chararray);
+
+define XPath org.apache.pig.piggybank.evaluation.xml.XPath();
+
+B = foreach A generate XPath(x,'BOOK/TITLE'),XPath(x,'BOOK/AUTHOR');
+
+dump B;
+
+STORE B into 'output/' using PigStorage(',');
